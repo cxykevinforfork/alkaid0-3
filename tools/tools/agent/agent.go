@@ -134,7 +134,7 @@ func updateAgentInfo(session *structs.Chats, mp map[string]*any, cross []*any, t
 }
 
 func updateInfo(session *structs.Chats, mp map[string]*any, cross []*any, toolID string) (bool, []*any, error) {
-	currToolName := u.Ternary(session.CurrentAgentID != "", "activate_agent", "deactivate_agent")
+	currToolName := u.Ternary(session.CurrentAgentID == "", "activate_agent", "deactivate_agent")
 	toolCallID := fmt.Sprintf("call_%d_%d_%s", session.ID, session.CurrentMessageID, toolID)
 	respString := ""
 	var nameVal *string

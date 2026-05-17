@@ -288,7 +288,12 @@ func UserAddMsg(session *structs.Chats, msg string, refers *structs.MessagesRefe
 	return request.UserAddMsg(session, msg, refers)
 }
 
+// SubAgentReject 子代理拒绝
+func SubAgentReject(session *structs.Chats) error {
+	return request.SubAgentReject(session)
+}
+
 // SendRequest 发送请求
-func SendRequest(ctx context.Context, session *structs.Chats, callback func(string, string, uint64, reqStructs.Usage) error) (bool, error) {
+func SendRequest(ctx context.Context, session *structs.Chats, callback func(string, string, uint64, reqStructs.Usage, *string) error) (bool, error) {
 	return request.SendRequest(ctx, session, callback)
 }

@@ -497,7 +497,7 @@ func TestSendRequest_ModelNotFound(t *testing.T) {
 	}
 
 	// 尝试发送请求
-	_, err := SendRequest(context.Background(), session, func(delta, thinking string, _ uint64, _ structs.Usage) error {
+	_, err := SendRequest(context.Background(), session, func(delta, thinking string, _ uint64, _ structs.Usage, _ *string) error {
 		return nil
 	})
 

@@ -46,6 +46,7 @@ type AIResponse struct {
 	ToolCallContent map[string]any
 	Usage           *reqStructs.Usage
 	SummaryFlag     bool
+	AgentID         *string
 }
 
 // msgAction 停止原因
@@ -145,7 +146,7 @@ func (p *Object) Start(ctx context.Context) {
 				needCompress = false
 			}
 
-			finish, err := funcs.SendRequest(responseCtx, session, func(delta string, thinkingDelta string, id uint64, usage reqStructs.Usage) error {
+			finish, err := funcs.SendRequest(responseCtx, session, func(delta string, thinkingDelta string, id uint64, usage reqStructs.Usage, agentID *string) error {
 				select {
 				case <-responseCtx.Done():
 					return responseCtx.Err()
@@ -170,6 +171,7 @@ func (p *Object) Start(ctx context.Context) {
 					ThinkingContext: thinkingDelta,
 					Content:         delta,
 					Usage:           &usage,
+					AgentID:         agentID,
 				})
 
 				if usage.TotalTokens != 0 {
@@ -183,7 +185,10 @@ func (p *Object) Start(ctx context.Context) {
 					}
 					modelCfg, ok := config.GlobalConfig.Model.Models[int32(modelID)]
 					if ok {
-						if usage.TotalTokens >= modelCfg.CompressSize {
+						if modelCfg.CompressSize != 0 && usage.TotalTokens >= modelCfg.CompressSize {
+							needCompress = true
+						}
+						if modelCfg.CompressSize == 0 && usage.TotalTokens >= 100000 {
 							needCompress = true
 						}
 					}
@@ -224,6 +229,11 @@ func (p *Object) Start(ctx context.Context) {
 							continue
 						}
 
+						if session.CurrentAgentID != "" {
+							funcs.SubAgentReject(session)
+							continue
+						}
+
 						if needCompress {
 							logger.Info("start auto summary in session=%d", session.ID)
 							call(AIResponse{
@@ -250,12 +260,20 @@ func (p *Object) Start(ctx context.Context) {
 							StopReason: StopReasonModel,
 						})
 					} else if len(pendingTools) > 0 {
+						if session.CurrentAgentID != "" {
+							funcs.SubAgentReject(session)
+							continue
+						}
 						call(AIResponse{
 							MsgID:       msgID,
 							PendingTool: &pendingTools,
 							StopReason:  StopReasonPendingTool,
 						})
 						break
+					}
+					if session.CurrentAgentID != "" {
+						funcs.SubAgentReject(session)
+						continue
 					}
 
 					if needCompress {

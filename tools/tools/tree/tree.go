@@ -150,7 +150,7 @@ func writeTree(session *structs.Chats, mp map[string]*any, cross []*any) (bool, 
 		}, nil
 	}
 
-	_, err = SolveCall(session.CurrentActivatePath, rets.TreeObj, str)
+	_, err = SolveCall(filepath.Join(session.Root, session.CurrentActivatePath), rets.TreeObj, str)
 	// fmt.Printf("\nTree diff: %v\n", diff)
 	if err != nil {
 		logger.Warn("act diff error: %v", err)

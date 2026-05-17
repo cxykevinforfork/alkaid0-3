@@ -72,6 +72,30 @@ func UserAddMsg(session *storageStructs.Chats, msg string, refers *storageStruct
 	return nil
 }
 
+// SubAgentReject 子代理拒绝
+func SubAgentReject(session *storageStructs.Chats) error {
+	logger.Info("SubAgentReject: chatID=%d", session.ID)
+	db := session.DB
+	chatID := session.ID
+	var refer storageStructs.MessagesReferList
+
+	if session.State == state.StateWaitApprove {
+		reason := "<| tool call automatically rejected due to lack of explicit approval |>"
+		if err := db.Create(&storageStructs.Messages{
+			ChatID:  chatID,
+			Delta:   reason,
+			Refers:  refer,
+			Type:    storageStructs.MessagesRoleCommunicate,
+			AgentID: new(session.CurrentAgentID),
+		}).Error; err != nil {
+			return err
+		}
+		session.State = state.StateIdle
+		return db.Save(session).Error
+	}
+	return nil
+}
+
 func stringDefault(str *string) string {
 	if str == nil {
 		return ""
@@ -506,7 +530,7 @@ func ExecuteToolCalls(session *storageStructs.Chats, toolCallingJSON string) (bo
 }
 
 // SendRequest 发送请求
-func SendRequest(ctx context.Context, session *storageStructs.Chats, callback func(string, string, uint64, structs.Usage) error) (bool, error) {
+func SendRequest(ctx context.Context, session *storageStructs.Chats, callback func(string, string, uint64, structs.Usage, *string) error) (bool, error) {
 	session.State = state.StateWaiting
 	session.TemporyDataOfRequest = make(map[string]any)
 	db := session.DB
@@ -627,7 +651,7 @@ func SendRequest(ctx context.Context, session *storageStructs.Chats, callback fu
 			CompletionTokens: completionUsage,
 			TotalTokens:      totalUsage,
 			CachedTokens:     cachedUsage,
-		}); err != nil {
+		}, new(session.CurrentAgentID)); err != nil {
 			return err
 		}
 		return nil
@@ -701,7 +725,7 @@ func SendRequest(ctx context.Context, session *storageStructs.Chats, callback fu
 		CompletionTokens: completionUsage,
 		TotalTokens:      totalUsage,
 		CachedTokens:     cachedUsage,
-	})
+	}, new(session.CurrentAgentID))
 	if err != nil {
 		return true, err
 	}

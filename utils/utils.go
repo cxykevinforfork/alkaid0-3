@@ -37,6 +37,14 @@ func Default[T any, K comparable](v map[K]T, key K, defaults T) T {
 	return val
 }
 
+// ValDefault 默认值
+func ValDefault[T any](v *T, defaults T) T {
+	if v == nil {
+		return defaults
+	}
+	return *v
+}
+
 // GetH 从 H 里取 type
 func GetH[T any](v H, key string) (T, bool) {
 	val, ok := v[key]

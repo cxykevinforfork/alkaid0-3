@@ -443,6 +443,7 @@ func loadSession(cwd string, id *uint32, knowID bool) (*structs.Chats, error) {
 							"type": "text",
 							"text": resp.ThinkingContext,
 						},
+						AgentStatus: new(u.ValDefault(resp.AgentID, "")),
 					},
 				}, 0)
 				if err != nil {
@@ -460,6 +461,7 @@ func loadSession(cwd string, id *uint32, knowID bool) (*structs.Chats, error) {
 							"type": "text",
 							"text": resp.Content,
 						},
+						AgentStatus: new(u.ValDefault(resp.AgentID, "")),
 					},
 				}, 0)
 				if err != nil {
@@ -721,15 +723,15 @@ func SessionNew(req SessionNewRequest, call func(string, any, *string) error, co
 
 // SessionUpdateUpdate 更新会话的参数
 type SessionUpdateUpdate struct {
-	SessionUpdate    string `json:"sessionUpdate"`
-	Content          any    `json:"content,omitempty"`
-	ToolCallID       string `json:"toolCallId,omitempty"`
-	Title            string `json:"title,omitempty"`
-	Kind             string `json:"kind,omitempty"`
-	Status           string `json:"status,omitempty"`
-	ExpandErrorMsg   string `json:"alk.cxykevin.top/error_msg,omitempty"`
-	CompabiltyIgnore string `json:"alk.cxykevin.top/ignore,omitempty"`
-	AgentStatus      string `json:"alk.cxykevin.top/agent_status,omitempty"`
+	SessionUpdate    string  `json:"sessionUpdate"`
+	Content          any     `json:"content,omitempty"`
+	ToolCallID       string  `json:"toolCallId,omitempty"`
+	Title            string  `json:"title,omitempty"`
+	Kind             string  `json:"kind,omitempty"`
+	Status           string  `json:"status,omitempty"`
+	ExpandErrorMsg   string  `json:"alk.cxykevin.top/error_msg,omitempty"`
+	CompabiltyIgnore string  `json:"alk.cxykevin.top/ignore,omitempty"`
+	AgentStatus      *string `json:"alk.cxykevin.top/agent_status,omitempty"`
 }
 
 // SessionUpdate 更新会话的请求
@@ -776,6 +778,7 @@ func SessionLoad(req SessionLoadRequest, call func(string, any, *string) error, 
 						"type": "text",
 						"text": val.Delta,
 					},
+					AgentStatus: new(u.ValDefault(val.AgentID, "")),
 				},
 			}, nil)
 			if err != nil {
@@ -791,6 +794,7 @@ func SessionLoad(req SessionLoadRequest, call func(string, any, *string) error, 
 							"type": "text",
 							"text": val.ThinkingDelta,
 						},
+						AgentStatus: new(u.ValDefault(val.AgentID, "")),
 					},
 				}, nil)
 				if err != nil {
@@ -805,6 +809,7 @@ func SessionLoad(req SessionLoadRequest, call func(string, any, *string) error, 
 						"type": "text",
 						"text": val.Delta,
 					},
+					AgentStatus: new(u.ValDefault(val.AgentID, "")),
 				},
 			}, nil)
 			previousToolJSON = val.ToolCallingJSONString
