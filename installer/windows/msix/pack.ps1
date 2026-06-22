@@ -60,6 +60,6 @@ Write-Output "==> Build Service Support"
 g++.exe ..\service\alkservice.cpp -o .\dist\Bin\alkservice.exe -mwindows -static -ladvapi32 -luser32
 
 Write-Output "==> Packing"
-winapp.exe package ".\dist" --cert "$pfxPath" --output=".\alkaid-windows-amd64.msix"
+winapp.exe package ".\dist" --cert "$pfxPath" --output=".\alkaid0-windows-amd64.msix"
 
 Write-Output "==> Build Finished!"
